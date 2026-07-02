@@ -97,7 +97,9 @@
   :ensure t
   :after compat
   :config
-  (marginalia-mode +1))
+  (marginalia-mode +1)
+  (add-to-list 'marginalia-annotator-registry
+               '(file none builtin none)))
 (use-package consult
   :ensure t
   :bind (
