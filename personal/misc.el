@@ -22,7 +22,11 @@
 (setq ffap-machine-p-known 'reject)
 (setq window-combination-resize t)
 
-(xclip-mode +1)
+(use-package xclip
+  :ensure t
+  :if (executable-find "xclip")
+  :config
+  (xclip-mode +1))
 (winner-mode +1)
 
 (defun toggle-delete-other-windows ()
