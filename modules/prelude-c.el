@@ -36,6 +36,18 @@
 (prelude-treesit-remap 'c 'c-mode 'c-ts-mode)
 (prelude-treesit-remap 'cpp 'c++-mode 'c++-ts-mode)
 
+(declare-function eglot-format-buffer "eglot")
+
+(defun nam/c-c++-buffer-p ()
+  "Return non-nil when the current buffer is using a C or C++ major mode."
+  (derived-mode-p 'c-mode 'c++-mode 'c-ts-mode 'c++-ts-mode))
+
+(defun nam/c-c++-format-buffer-on-save ()
+  "Format C/C++ buffer with Eglot before saving."
+  (when (and (nam/c-c++-buffer-p)
+             (bound-and-true-p eglot--managed-mode))
+    (eglot-format-buffer)))
+
 (defun prelude-c-mode-common-defaults ()
   ;; K&R style for classic cc-mode
   (setq c-default-style "k&r"
@@ -46,7 +58,9 @@
   (when (derived-mode-p 'c-ts-mode 'c++-ts-mode)
     (setq c-ts-mode-indent-style 'k&r))
   (subword-mode +1)
-  (prelude-lsp-enable))
+  (prelude-lsp-enable)
+  (when (nam/c-c++-buffer-p)
+    (add-hook 'before-save-hook #'nam/c-c++-format-buffer-on-save nil t)))
 
 (setq prelude-c-mode-common-hook 'prelude-c-mode-common-defaults)
 

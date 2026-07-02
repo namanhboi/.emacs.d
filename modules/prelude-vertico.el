@@ -130,5 +130,25 @@
          ("M-s k" . consult-keep-lines)
          ("M-s u" . consult-focus-lines)))
 
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)
+   ("C-;" . embark-dwim)
+   ("C-h B" . embark-bindings))
+  :init
+  ;; Replace the regular prefix help command with Embark's contextual bindings.
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ;; Keep the Embark live/completions buffers out of the way.
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package embark-consult
+  :ensure t
+  :after (embark consult))
+
 (provide 'prelude-vertico)
 ;;; prelude-vertico.el ends here

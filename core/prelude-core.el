@@ -60,10 +60,43 @@ PROMPT sets the `read-string prompt."
 (prelude-install-search-engine "github"     "https://github.com/search?q="                 "Search GitHub: ")
 (prelude-install-search-engine "duckduckgo" "https://duckduckgo.com/?t=lm&q="              "Search DuckDuckGo: ")
 
+(defun prelude--source-file (file)
+  "Return FILE's Emacs Lisp source file, when it exists."
+  (when file
+    (let ((source-file (if (string-suffix-p ".elc" file)
+                           (substring file 0 -1)
+                         file)))
+      (when (and (string-suffix-p ".el" source-file)
+                 (file-exists-p source-file))
+        source-file))))
+
+(defun prelude--init-file-p (file)
+  "Return non-nil when FILE is part of the loaded Prelude configuration."
+  (and file
+       (file-in-directory-p file prelude-dir)
+       (not (and (bound-and-true-p package-user-dir)
+                 (file-in-directory-p file package-user-dir)))
+       (not (file-in-directory-p file (expand-file-name "transient" prelude-dir)))))
+
+(defun prelude--loaded-init-files ()
+  "Return loaded Prelude configuration files."
+  (let (files)
+    (dolist (file (list user-init-file load-file-name))
+      (let ((file (prelude--source-file file)))
+        (when (prelude--init-file-p file)
+          (push file files))))
+    (dolist (entry load-history)
+      (let ((file (prelude--source-file (car entry))))
+        (when (prelude--init-file-p file)
+          (push file files))))
+    (delete-dups files)))
+
 (defun prelude-recompile-init ()
-  "Byte-compile all your dotfiles again."
+  "Byte-compile all loaded Prelude configuration files again."
   (interactive)
-  (byte-recompile-directory prelude-dir 0))
+  (dolist (file (prelude--loaded-init-files))
+    (when file
+      (byte-compile-file file))))
 
 (defvar prelude-tips
   '("Press <C-c o> to open a file with external program."

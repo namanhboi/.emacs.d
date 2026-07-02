@@ -144,9 +144,6 @@
 (recentf-mode +1)
 
 ;; use shift + arrow keys to switch between visible buffers
-(require 'windmove)
-(windmove-default-keybindings)
-
 ;; automatically save buffers associated with files on buffer switch
 ;; and on windows switch
 (require 'super-save)
@@ -208,7 +205,7 @@
     (add-hook 'before-save-hook 'prelude-cleanup-maybe nil t)
     (whitespace-mode +1)))
 
-(add-hook 'text-mode-hook 'prelude-enable-flyspell)
+;; (add-hook 'text-mode-hook 'prelude-enable-flyspell)
 (add-hook 'text-mode-hook 'prelude-enable-whitespace)
 
 ;; enable narrowing commands
@@ -245,6 +242,9 @@
   :init
   (setq avy-background t
         avy-style 'at-full))
+
+(global-set-key (kbd "M-j") 'avy-goto-char-timer)
+(define-key isearch-mode-map (kbd "M-j") 'avy-isearch)
 
 ;; show match count during isearch and query-replace
 (setq isearch-lazy-count t)
@@ -330,7 +330,7 @@ Does not indent if the mode is in `prelude-indent-sensitive-modes'."
   :defer t
   :init
   (setq whitespace-line-column 80
-        whitespace-style '(face tabs empty trailing lines-tail)))
+        whitespace-style '(face tabs empty trailing)))
 
 ;; saner regex syntax
 (use-package re-builder
