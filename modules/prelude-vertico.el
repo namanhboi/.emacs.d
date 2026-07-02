@@ -88,12 +88,16 @@
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 
+;; Compatibility shims for newer package APIs.
+(use-package compat
+  :ensure t)
+
 ;; Rich annotations in the minibuffer (docstrings, file sizes, etc.)
 (use-package marginalia
   :ensure t
-  :init
-  (marginalia-mode))
-
+  :after compat
+  :config
+  (marginalia-mode +1))
 (use-package consult
   :ensure t
   :bind (
