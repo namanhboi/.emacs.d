@@ -88,18 +88,25 @@
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 
-;; Compatibility shims for newer package APIs.
+;; Compatibility for newer Marginalia on Emacs builds where
+;; `seconds-to-string' only accepts one argument.
+(require 'time-date)
+
+(when (equal (func-arity #'seconds-to-string) '(1 . 1))
+  (defalias 'nam/seconds-to-string-1arg
+    (symbol-function 'seconds-to-string))
+
+  (defun seconds-to-string (seconds &optional _format _short)
+    (funcall #'nam/seconds-to-string-1arg seconds)))
+
 (use-package compat
   :ensure t)
 
-;; Rich annotations in the minibuffer (docstrings, file sizes, etc.)
 (use-package marginalia
   :ensure t
   :after compat
   :config
-  (marginalia-mode +1)
-  (add-to-list 'marginalia-annotator-registry
-               '(file none builtin none)))
+  (marginalia-mode +1))
 (use-package consult
   :ensure t
   :bind (
