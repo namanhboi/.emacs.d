@@ -317,7 +317,9 @@
                 (goto-char (point-min))
                 (recenter 0))))
 
-(require 'org-download)
+(use-package org-download
+  :ensure t
+  :after org)
 
 ;; Drag-and-drop to `dired`
 (add-hook 'dired-mode-hook 'org-download-enable)
