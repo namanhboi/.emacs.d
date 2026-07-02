@@ -22,11 +22,19 @@
 (setq ffap-machine-p-known 'reject)
 (setq window-combination-resize t)
 
+;; Copy Emacs kill-ring to the remote machine's X clipboard, if available.
 (use-package xclip
   :ensure t
-  :if (executable-find "xclip")
+  :if (and (executable-find "xclip")
+           (getenv "DISPLAY"))
   :config
   (xclip-mode +1))
+
+;; Copy Emacs kill-ring to your local/laptop clipboard through OSC52.
+(use-package clipetty
+  :ensure t
+  :config
+  (global-clipetty-mode +1))
 (winner-mode +1)
 
 (defun toggle-delete-other-windows ()
