@@ -87,6 +87,20 @@ terminal automatically: GUI-only Eldoc and clipboard integrations are not
 enabled there, while OSC 52 clipboard support remains available through
 `clipetty`.
 
+For unambiguous modified keys inside remote tmux, use tmux 3.5 or newer and
+add the following to the remote host's `~/.tmux.conf`:
+
+```tmux
+set -g default-terminal "tmux-256color"
+set -g extended-keys on
+set -g extended-keys-format csi-u
+```
+
+Start a new tmux server after changing these settings.  The local terminal
+emulator must also support the Kitty Keyboard Protocol.  Inside Emacs, use
+`M-x kkp-status` to verify negotiation and `C-h k` followed by a modified key
+to see the event Emacs received.
+
 **Important:** Don't forget to adjust your
 `prelude-modules.el` file in your personal directory
 once the installation is done. By default most of the modules
