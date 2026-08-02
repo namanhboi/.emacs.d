@@ -114,10 +114,15 @@
     (setq rust-rustfmt-bin (concat dot-cargo-bin "rustfmt")
           rust-cargo-bin (concat dot-cargo-bin "cargo"))))
 
-(use-package rust-ts-mode
-  :ensure t
-  :hook (rust-ts-mode . (lambda ()
-                          (run-hooks 'prelude-rust-mode-hook))))
+;; Loading `rust-ts-mode' without its grammar emits a warning during every
+;; startup.  Keep the conventional Rust mode available on minimal hosts and
+;; enable the Tree-sitter variant automatically once its grammar is installed.
+(when (and (fboundp 'treesit-ready-p)
+           (treesit-ready-p 'rust t))
+  (use-package rust-ts-mode
+    :ensure t
+    :hook (rust-ts-mode . (lambda ()
+                            (run-hooks 'prelude-rust-mode-hook)))))
 
 ;; ---------------------------------------------------------------------
 ;; Cargo commands
