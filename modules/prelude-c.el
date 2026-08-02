@@ -37,8 +37,14 @@
 (prelude-treesit-remap 'cpp 'c++-mode 'c++-ts-mode)
 
 ;; CUDA source and header files are C++ for editing purposes.  Keep this
-;; association ahead of the one installed by cuda-mode.
-(add-to-list 'auto-mode-alist '("\\.cu\\(?:h\\)?\\'" . c++-ts-mode))
+;; association ahead of the one installed by cuda-mode, but do not select the
+;; tree-sitter mode on fresh hosts where the C++ grammar is not installed yet.
+(add-to-list 'auto-mode-alist
+             (cons "\\.cu\\(?:h\\)?\\'"
+                   (if (and (fboundp 'treesit-ready-p)
+                            (treesit-ready-p 'cpp t))
+                       'c++-ts-mode
+                     'c++-mode)))
 
 (declare-function eglot-format-buffer "eglot")
 
@@ -62,7 +68,11 @@
   (when (derived-mode-p 'c-ts-mode 'c++-ts-mode)
     (setq c-ts-mode-indent-style 'k&r))
   (subword-mode +1)
-  (prelude-lsp-enable)
+  ;; Eglot's C/C++ defaults require one of these language servers.  On a
+  ;; minimal remote host, keep editing functional without repeatedly warning.
+  (when (or (executable-find "clangd")
+            (executable-find "ccls"))
+    (prelude-lsp-enable))
   (when (nam/c-c++-buffer-p)
     (add-hook 'before-save-hook #'nam/c-c++-format-buffer-on-save nil t)))
 
