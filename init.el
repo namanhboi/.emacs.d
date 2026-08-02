@@ -114,6 +114,9 @@ that you want loaded before Prelude.")
 ;; load the core stuff
 (require 'prelude-packages)
 (require 'prelude-custom)  ;; Needs to be loaded before core, editor and ui
+;; The selected personal theme lives on ELPA, so install it after package.el
+;; is initialized and before `prelude-ui' tries to load it.
+(prelude-require-package 'ef-themes)
 (require 'prelude-ui)
 (require 'prelude-core)
 (require 'prelude-mode)

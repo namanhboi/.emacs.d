@@ -69,6 +69,24 @@ Note that the installer will back up any existing `.emacs` file or
 you're doing a manual install make sure you don't have a `.emacs`
 file or back up your existing `.emacs.d` directory manually.
 
+## Terminal-only cluster setup
+
+This repository can be used directly on a fresh terminal-only host.  Install
+GNU Emacs 29.1 or newer (Emacs 30.2 is the tested version), `git`, and `curl`,
+then clone the configuration into Emacs's normal configuration directory:
+
+```shell
+git clone git@github.com:namanhboi/.emacs.d.git ~/.emacs.d
+emacs -nw
+```
+
+The first launch needs network access to install the configured ELPA packages;
+later launches use the local package cache.  `direnv`, `ripgrep`, and `sqlite3`
+enable the corresponding optional integrations.  The configuration detects a
+terminal automatically: GUI-only Eldoc and clipboard integrations are not
+enabled there, while OSC 52 clipboard support remains available through
+`clipetty`.
+
 **Important:** Don't forget to adjust your
 `prelude-modules.el` file in your personal directory
 once the installation is done. By default most of the modules

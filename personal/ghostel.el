@@ -2,6 +2,16 @@
   :vc (:url "https://github.com/dakra/ghostel"
             :lisp-dir "lisp"
             :rev :newest)
+  :init
+  ;; Let Ghostel use its built-in TRAMP process, shell-discovery, and
+  ;; temporary terminfo setup.  Enabling integration also makes
+  ;; `ghostel-ssh-install-terminfo' effective through its `auto' default.
+  (setq ghostel-tramp-shell-integration t)
+  (setq ghostel-tramp-shells
+        '(("ssh" login-shell)          ; auto-detect via getent
+          ("sshx" login-shell)
+          ("scp" login-shell)
+          ("docker" "/bin/sh")))       ; fixed shell for containers
   :commands (ghostel
              ghostel-project
              ghostel-other
@@ -29,3 +39,4 @@ With prefix ARG, pass ARG through to `ghostel'."
   (define-key projectile-command-map (kbd "x h") #'projectile-run-ghostel))
 
 (global-set-key (kbd "C-x p h") #'projectile-run-ghostel)
+;; Default configuration

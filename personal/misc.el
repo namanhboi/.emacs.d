@@ -1,5 +1,7 @@
 ;; Disable Prelude's undo-tree before it even loads
 (setq prelude-undo-tree nil)
+;; Avoid requiring a system spell checker on minimal terminal hosts.
+(setq prelude-flyspell nil)
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t)

@@ -86,6 +86,15 @@
     zop-to-char)
   "A list of packages to ensure are installed at launch.")
 
+(defvar prelude-package-archives-refreshed-p nil
+  "Non-nil after package archive contents have been refreshed this session.")
+
+(defun prelude-refresh-package-contents-once ()
+  "Refresh package archive contents at most once per Emacs session."
+  (unless prelude-package-archives-refreshed-p
+    (package-refresh-contents)
+    (setq prelude-package-archives-refreshed-p t)))
+
 (defun prelude-packages-installed-p ()
   "Check if all packages in `prelude-packages' are installed."
   (cl-every #'package-installed-p prelude-packages))
@@ -95,6 +104,9 @@
   (unless (memq package prelude-packages)
     (add-to-list 'prelude-packages package))
   (unless (package-installed-p package)
+    ;; MELPA keeps only the latest snapshot of many packages.  Refresh stale
+    ;; archive metadata before trying to download the version named by it.
+    (prelude-refresh-package-contents-once)
     (package-install package)))
 
 (defun prelude-require-packages (packages)
@@ -107,7 +119,7 @@ Missing packages are installed automatically."
   (unless (prelude-packages-installed-p)
     ;; check for new packages (package versions)
     (message "%s" "Emacs Prelude is now refreshing its package database...")
-    (package-refresh-contents)
+    (prelude-refresh-package-contents-once)
     (message "%s" " done.")
     ;; install the missing packages
     (prelude-require-packages prelude-packages)))

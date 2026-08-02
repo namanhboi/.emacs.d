@@ -32,3 +32,13 @@ var/
 .lsp-session*
 gotools/
 eln-cache/
+
+# Machine-local state and downloaded Tree-sitter grammars.
+.org-id-locations
+diary
+history
+nov-places
+org-roam.db
+projectile-frecency.eld
+projects
+tree-sitter/

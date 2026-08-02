@@ -36,6 +36,10 @@
 (prelude-treesit-remap 'c 'c-mode 'c-ts-mode)
 (prelude-treesit-remap 'cpp 'c++-mode 'c++-ts-mode)
 
+;; CUDA source and header files are C++ for editing purposes.  Keep this
+;; association ahead of the one installed by cuda-mode.
+(add-to-list 'auto-mode-alist '("\\.cu\\(?:h\\)?\\'" . c++-ts-mode))
+
 (declare-function eglot-format-buffer "eglot")
 
 (defun nam/c-c++-buffer-p ()
