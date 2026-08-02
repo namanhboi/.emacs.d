@@ -1,4 +1,20 @@
-;;; 1. Prelude Conflict Resolution
+;;; 1. Portable paths and Prelude conflict resolution
+
+(defvar my/org-directory (expand-file-name "org-files" "~")
+  "Root directory for personal Org files.")
+
+(defvar my/org-roam-directory
+  (expand-file-name "org-roam" my/org-directory)
+  "Directory containing Org-roam notes.")
+
+(defvar my/org-agenda-file-candidates
+  (mapcar (lambda (file) (expand-file-name file my/org-directory))
+          '("inbox.org" "agenda.org" "projects.org"))
+  "Potential agenda files, filtered to files present on the current host.")
+
+;; Org-roam requires its root to exist before database autosync starts.  This
+;; also creates the common Org parent directory on a fresh remote host.
+(make-directory my/org-roam-directory t)
 
 (defvar my/bibliography-files '("~/org-files/ref/My Library.bib")
   "Bibliography files used by Org citation tools.")
@@ -49,8 +65,11 @@
   (add-hook 'org-shiftright-final-hook #'windmove-right)
 
   ;; Base directories
-  (setq org-directory "~/org-files")
-  (setq org-agenda-files '("~/org-files/inbox.org" "~/org-files/agenda.org" "~/org-files/projects.org"))
+  (setq org-directory my/org-directory)
+  ;; Do not prompt about workstation-only agenda files on a fresh cluster.
+  ;; Restart Emacs after copying those files to make them part of the agenda.
+  (setq org-agenda-files
+        (cl-remove-if-not #'file-exists-p my/org-agenda-file-candidates))
 
   ;; Explicitly load org-id to prevent link parsing errors
   (require 'org-id)
@@ -125,7 +144,7 @@
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (file-truename "~/org-files/org-roam"))
+  (org-roam-directory my/org-roam-directory)
   (org-roam-completion-everywhere t)
   (org-roam-capture-templates
    '(("d" "default" plain "%?"
@@ -213,7 +232,7 @@
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (file-truename "~/org-files/org-roam"))
+  (org-roam-directory my/org-roam-directory)
   (org-roam-completion-everywhere t)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
@@ -304,11 +323,14 @@
 ;;; 9. Set GTD Agenda as Startup Screen
 (setq inhibit-startup-screen t)
 (setq org-agenda-window-setup 'only-window)
-(setq initial-buffer-choice
-      (lambda ()
-        (org-agenda nil "g")
-        (delete-other-windows)
-        (get-buffer "*Org Agenda*")))
+(when (and (not (daemonp)) org-agenda-files)
+  ;; Daemons have no startup frame and fresh cluster hosts may have no agenda
+  ;; files, so only create the agenda when an interactive startup can use it.
+  (setq initial-buffer-choice
+        (lambda ()
+          (org-agenda nil "g")
+          (delete-other-windows)
+          (get-buffer "*Org Agenda*"))))
 (with-eval-after-load 'org-agenda
   (define-key org-agenda-mode-map (kbd "g")
               (lambda ()
