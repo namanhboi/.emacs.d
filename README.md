@@ -370,3 +370,10 @@ Before upgrading, preserve the entire configuration, including ignored files
 and untracked personal files. Native compilation caches are version-specific;
 do not copy `.eln` files between Emacs versions. Session snapshots and the
 pre-upgrade backup are kept under `~/.cache/emacs-upgrade/` on this workstation.
+
+After an Emacs major-version upgrade, package bytecode can also retain calls
+to compatibility functions that the new version no longer loads. Recompile
+affected packages with `M-x package-recompile` (or use
+`M-x package-recompile-all` for a full rebuild); clearing only `.eln` files
+does not rebuild `.elc` files. Background native compiler diagnostics remain
+in `*Warnings*` and `*Async-native-compile-log*` without opening popup windows.
