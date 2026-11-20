@@ -1,5 +1,7 @@
 ;;; -*- lexical-binding: nil; -*-
 (use-package ghostel
+  :if (and (fboundp 'module-load)
+           (or (package-installed-p 'ghostel) (executable-find "git")))
   :vc (:url "https://github.com/dakra/ghostel"
             :lisp-dir "lisp"
             :rev :newest)
@@ -31,6 +33,8 @@
 Switch to the project-specific Ghostel buffer if it already exists.
 With prefix ARG, pass ARG through to `ghostel'."
   (interactive "P")
+  (unless (fboundp 'ghostel)
+    (user-error "Ghostel needs dynamic module support and Git for installation"))
   (let* ((project (project-current t))
          (root (file-name-as-directory (expand-file-name (project-root project))))
          (default-directory root)
@@ -45,5 +49,6 @@ With prefix ARG, pass ARG through to `ghostel'."
             name)))
     (ghostel arg)))
 
-(define-key project-prefix-map (kbd "h") #'nam/project-ghostel)
+(when (and (fboundp 'module-load) (locate-library "ghostel"))
+  (define-key project-prefix-map (kbd "h") #'nam/project-ghostel))
 ;; Default configuration

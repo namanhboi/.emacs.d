@@ -78,8 +78,9 @@ Do not launch another player while the same playlist is already open."
   (setq elfeed-db-directory (expand-file-name "elfeed" user-emacs-directory)
         elfeed-search-filter "+unread")
   :config
-  (define-key elfeed-search-mode-map (kbd "v") #'nam/elfeed-play-in-mpv)
-  (define-key elfeed-show-mode-map (kbd "v") #'nam/elfeed-play-in-mpv)
+  (when (executable-find "mpv")
+    (define-key elfeed-search-mode-map (kbd "v") #'nam/elfeed-play-in-mpv)
+    (define-key elfeed-show-mode-map (kbd "v") #'nam/elfeed-play-in-mpv))
   ;; Remove former article feeds and mixed YouTube feeds when reloading.
   (setq elfeed-feeds
         (seq-remove (lambda (feed)

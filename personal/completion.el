@@ -1,4 +1,8 @@
 ;;; completion.el --- Personal completion preferences -*- lexical-binding: t; -*-
+(use-package agent-shell
+  :ensure t
+  :commands (agent-shell))
+
 (with-eval-after-load 'company
   (global-company-mode -1)
   (define-key company-mode-map [remap indent-for-tab-command]
@@ -44,11 +48,12 @@
 
 (defun nam/completion-preview-setup ()
   "Enable inline hints in Corfu programming, text, and agent shell buffers."
-  (completion-preview-mode
+  (when (fboundp 'completion-preview-mode)
+    (completion-preview-mode
    (if (and (bound-and-true-p corfu-mode)
             (derived-mode-p 'prog-mode 'text-mode 'agent-shell-mode)
             (not (derived-mode-p 'LaTeX-mode 'latex-mode)))
-       1 -1)))
+       1 -1))))
 
 (defun nam/completion-preview-inhibit-for-popup ()
   "Hide inline hints while the completion menu handles input."
@@ -98,6 +103,7 @@
 
 (use-package completion-preview
   :ensure nil
+  :if (locate-library "completion-preview")
   :demand t
   :custom
   (completion-preview-idle-delay 0.2)

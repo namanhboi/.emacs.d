@@ -179,6 +179,7 @@
 
 ;; tramp, for sudo access
 (use-package tramp
+  :ensure nil
   :defer t
   :init
   (setq tramp-default-method "ssh"))
@@ -187,6 +188,7 @@
 
 ;; flyspell-mode does spell-checking on the fly as you type
 (use-package flyspell
+  :ensure nil
   :defer t
   :init
   (setq ispell-program-name "aspell"
@@ -229,6 +231,7 @@
 
 ;; bookmarks
 (use-package bookmark
+  :ensure nil
   :defer t
   :init
   (setq bookmark-default-file (expand-file-name "bookmarks" prelude-savefile-dir)
@@ -264,10 +267,12 @@
 
 ;; enable some really cool extensions like C-x C-j(dired-jump)
 (use-package dired-x
+  :ensure nil
   :after dired)
 
 ;; ediff - don't start another frame
 (use-package ediff
+  :ensure nil
   :defer t
   :init
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
@@ -328,6 +333,7 @@ Does not indent if the mode is in `prelude-indent-sensitive-modes'."
 
 ;; whitespace-mode config
 (use-package whitespace
+  :ensure nil
   :defer t
   :init
   (setq whitespace-line-column 80
@@ -335,11 +341,13 @@ Does not indent if the mode is in `prelude-indent-sensitive-modes'."
 
 ;; saner regex syntax
 (use-package re-builder
+  :ensure nil
   :defer t
   :init
   (setq reb-re-syntax 'string))
 
 (use-package eshell
+  :ensure nil
   :defer t
   :init
   (setq eshell-directory-name (expand-file-name "eshell" prelude-savefile-dir)))
@@ -349,6 +357,7 @@ Does not indent if the mode is in `prelude-indent-sensitive-modes'."
 
 ;; Compilation from Emacs
 (use-package compile
+  :ensure nil
   :defer t
   :hook (compilation-filter . ansi-color-compilation-filter)
   :init

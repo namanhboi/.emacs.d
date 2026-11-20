@@ -31,6 +31,14 @@
   ;; C-c C-g = same as C-c C-v, but easier to remember as “go to PDF”.
   (local-set-key (kbd "C-c C-g") #'TeX-view))
 
+(defun my-latex-flyspell-setup ()
+  "Enable LaTeX spell checking only when a spell checker is installed."
+  (require 'ispell)
+  (when-let* ((program (or (executable-find ispell-program-name)
+                          (cl-some #'executable-find '("aspell" "hunspell" "ispell")))))
+    (setq ispell-program-name program)
+    (flyspell-mode 1)))
+
 ;; ----------------------------
 ;; AUCTeX
 ;; ----------------------------
@@ -40,7 +48,7 @@
   :defer t
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook ((LaTeX-mode . visual-line-mode)
-         (LaTeX-mode . flyspell-mode)
+         (LaTeX-mode . my-latex-flyspell-setup)
          (LaTeX-mode . LaTeX-math-mode)
          (LaTeX-mode . turn-on-reftex)
          (LaTeX-mode . my-latex-company-setup)
@@ -75,18 +83,24 @@
         TeX-source-correlate-start-server t)
 
   ;; ----------------------------
-  ;; Use Zathura as default viewer
+  ;; Prefer Zathura, then an available system PDF viewer
   ;; ----------------------------
 
-  (setq TeX-view-program-selection
-        '((output-pdf "Zathura")))
-
-  (setq TeX-view-program-list
-        '(("Zathura"
-           ("zathura"
-            (mode-io-correlate
-             " --synctex-forward %n:0:%b -x \"emacsclient --no-wait +%{line} %{input}\"")
-            " %o"))))
+  (cond
+   ((executable-find "zathura")
+    (setq TeX-view-program-selection '((output-pdf "Zathura")))
+    (add-to-list 'TeX-view-program-list
+                 '("Zathura"
+                   ("zathura"
+                    (mode-io-correlate
+                     " --synctex-forward %n:0:%b -x \"emacsclient --no-wait +%{line} %{input}\"")
+                    " %o"))))
+   ((or (and (eq system-type 'darwin) (executable-find "open"))
+        (and (eq system-type 'gnu/linux) (executable-find "xdg-open")))
+    (let ((program (if (eq system-type 'darwin) "open" "xdg-open")))
+      (add-to-list 'TeX-view-program-list
+                   (list "System PDF viewer" (concat program " %o")))
+      (setq TeX-view-program-selection '((output-pdf "System PDF viewer"))))))
 
   ;; ----------------------------
   ;; Use latexmk as default command
@@ -94,13 +108,14 @@
 
   ;; latexmk automatically runs:
   ;; LaTeX -> BibTeX/Biber if needed -> LaTeX -> LaTeX
-  (add-to-list 'TeX-command-list
-               '("LatexMk"
-                 "latexmk -pdf -interaction=nonstopmode -file-line-error -synctex=1 %(output-dir) %s"
-                 TeX-run-TeX nil t
-                 :help "Run latexmk on file"))
+  (when (executable-find "latexmk")
+    (add-to-list 'TeX-command-list
+                 '("LatexMk"
+                   "latexmk -pdf -interaction=nonstopmode -file-line-error -synctex=1 %(output-dir) %s"
+                   TeX-run-TeX nil t
+                   :help "Run latexmk on file"))
 
-  ;; Make C-c C-c default to LatexMk.
-  (setq TeX-command-default "LatexMk"))
+    ;; Make C-c C-c default to LatexMk.
+    (setq TeX-command-default "LatexMk")))
 
 ;;; auctex.el ends here

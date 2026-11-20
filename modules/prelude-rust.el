@@ -49,7 +49,7 @@
 
 (defun nam/rust-run-flycheck-rust-setup ()
   "Run flycheck-rust-setup for Rust buffers."
-  (when (nam/rust-buffer-p)
+  (when (and (nam/rust-buffer-p) (executable-find "cargo"))
     (with-demoted-errors "Error in Rust Flycheck setup: %S"
       (nam/rust-set-safe-flycheck-defaults)
       (require 'flycheck-rust)
@@ -91,7 +91,8 @@
   (subword-mode +1)
 
   ;; Start rust-analyzer through Prelude's Eglot setup.
-  (prelude-lsp-enable)
+  (when (executable-find "rust-analyzer")
+    (prelude-lsp-enable))
 
   ;; Flycheck Rust is useful, but it must not prevent Eglot startup.
   (nam/rust-run-flycheck-rust-setup)
@@ -111,9 +112,10 @@
   :hook (rust-mode . (lambda ()
                        (run-hooks 'prelude-rust-mode-hook)))
   :config
-  (let ((dot-cargo-bin (expand-file-name "~/.cargo/bin/")))
-    (setq rust-rustfmt-bin (concat dot-cargo-bin "rustfmt")
-          rust-cargo-bin (concat dot-cargo-bin "cargo"))))
+  (when-let* ((program (executable-find "rustfmt")))
+    (setq rust-rustfmt-bin program))
+  (when-let* ((program (executable-find "cargo")))
+    (setq rust-cargo-bin program)))
 
 ;; Loading `rust-ts-mode' without its grammar emits a warning during every
 ;; startup.  Keep the conventional Rust mode available on minimal hosts and
@@ -131,6 +133,7 @@
 
 (use-package cargo
   :ensure t
+  :if (executable-find "cargo")
   :hook ((rust-mode rust-ts-mode) . cargo-minor-mode))
 
 ;; ---------------------------------------------------------------------

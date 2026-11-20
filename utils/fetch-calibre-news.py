@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -15,7 +16,7 @@ import time
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
-LIBRARY = Path.home() / "Calibre Library"
+LIBRARY = Path(os.environ.get("EMACS_CALIBRE_LIBRARY", Path.home() / "Calibre Library")).expanduser()
 STATE = ROOT / "savefile/news-daily"
 SOURCES = (
     ("financial-times", "financial_times.recipe", "ft", "Financial Times"),
@@ -27,8 +28,42 @@ def log(message):
     print(f"{datetime.now().isoformat(timespec='seconds')} {message}", flush=True)
 
 
+def calibre_program(name):
+    """Find a CLI on PATH or in an installed macOS Calibre application."""
+    program = shutil.which(name)
+    if program:
+        return program
+    for applications in (Path("/Applications"), Path.home() / "Applications"):
+        candidate = applications / "calibre.app/Contents/MacOS" / name
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
+
+
+def calibre_recipe_archive():
+    """Ask the installed Calibre runtime where its bundled recipes live."""
+    program = calibre_program("calibre-debug")
+    if not program:
+        return None
+    try:
+        result = subprocess.run([
+            program, "-c", "from calibre.utils.resources import get_path; "
+            "print('__RECIPES__=' + get_path('builtin_recipes.zip'))",
+        ], capture_output=True, text=True, check=True, timeout=30)
+        for line in result.stdout.splitlines():
+            if line.startswith("__RECIPES__="):
+                archive = Path(line.removeprefix("__RECIPES__="))
+                if archive.is_file():
+                    return archive
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
 def existing_issue(library, title):
     """Only count a completed EPUB; never modify the Calibre database here."""
+    if not (library / "metadata.db").is_file():
+        return None
     with sqlite3.connect((library / "metadata.db").as_uri() + "?mode=ro", uri=True) as db:
         rows = db.execute(
             "SELECT b.path,d.name FROM books b JOIN data d ON d.book=b.id "
@@ -51,7 +86,7 @@ def import_issue(library, title, epub):
     with SingleInstance(singleinstance_name) as no_gui:
         if no_gui:
             subprocess.run([
-                "/usr/bin/calibredb", "add", "--with-library", str(library),
+                calibre_program("calibredb"), "add", "--with-library", str(library),
                 "--title", title, "--tags", "News,Daily news", str(epub),
             ], check=True, timeout=180)
         else:
@@ -90,7 +125,7 @@ def fetch_source(source, day, directory):
     logfile = directory / f"{slug}.log"
     # Refresh from the installed recipes on each download, keeping Calibre's
     # extraction logic. Limit the window and browser concurrency for daily use.
-    with zipfile.ZipFile("/opt/calibre/resources/builtin_recipes.zip") as recipes:
+    with zipfile.ZipFile(calibre_recipe_archive()) as recipes:
         code = recipes.read(recipe_name).decode("utf-8")
     code += (f"\n{recipe_class}.oldest_article = 1.15\n"
              f"{recipe_class}.simultaneous_downloads = 1\n"
@@ -101,7 +136,7 @@ def fetch_source(source, day, directory):
         log(f"Downloading {title}; details: {logfile}")
         with logfile.open("a") as output:
             subprocess.run([
-                "/usr/bin/ebook-convert", str(recipe), str(partial),
+                calibre_program("ebook-convert"), str(recipe), str(partial),
                 "--dont-download-recipe", "--output-profile", "tablet",
                 "--title", title, "--pubdate", day.isoformat(),
             ], stdout=output, stderr=subprocess.STDOUT, check=True, timeout=4800)
@@ -112,7 +147,7 @@ def fetch_source(source, day, directory):
         validate_epub(epub)
         log(f"Retrying import of staged issue: {title}")
     subprocess.run([
-        "/usr/bin/calibre-debug", "-e", str(Path(__file__).resolve()), "--",
+        calibre_program("calibre-debug"), "-e", str(Path(__file__).resolve()), "--",
         "--import-issue", str(LIBRARY), title, str(epub),
     ], check=True, timeout=400)
     completed = existing_issue(LIBRARY, title)
@@ -153,12 +188,21 @@ def main():
         library, title, epub = args.import_issue
         import_issue(Path(library), title, Path(epub))
         return 0
-    os.environ["LC_ALL"] = "C.UTF-8"
+    if sys.platform.startswith("linux"):
+        os.environ["LC_ALL"] = "C.UTF-8"
+    if not (LIBRARY / "metadata.db").is_file():
+        log("Skipping news download: no local Calibre library")
+        return 0
     day = datetime.now().date()
     if args.check:
         for _, _, _, publication in SOURCES:
             title = f"{publication} [{day.strftime('%a, %d %b %Y')}]"
             print(f"{title}: {existing_issue(LIBRARY, title) or 'not downloaded yet'}")
+        return 0
+    missing = [name for name in ("calibredb", "ebook-convert", "calibre-debug")
+               if not calibre_program(name)]
+    if missing or not calibre_recipe_archive():
+        log("Skipping news download: Calibre tools or bundled recipes unavailable")
         return 0
     STATE.mkdir(parents=True, exist_ok=True)
     with (STATE / "fetch.lock").open("a") as lock:

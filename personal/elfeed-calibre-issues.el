@@ -6,8 +6,8 @@
 
 ;;; Code:
 
-(require 'sqlite)
-(require 'elfeed-db)
+(use-package elfeed :ensure t :defer t)
+(require 'sqlite nil t)
 (require 'url-parse)
 (require 'url-util)
 
@@ -20,6 +20,13 @@
   "Whether to include month-backfill collections alongside daily issues."
   :type 'boolean
   :group 'elfeed)
+
+(defun nam/elfeed-calibre-available-p ()
+  "Return non-nil when this host can read its local Calibre library."
+  (and (fboundp 'sqlite-available-p)
+       (sqlite-available-p)
+       (file-readable-p
+        (expand-file-name "metadata.db" nam/elfeed-calibre-library))))
 
 (defconst nam/elfeed-calibre-issue-feeds
   '(("calibre://atlantic" :title "The Atlantic — Calibre issues"
@@ -45,7 +52,8 @@
 Preserve read status, and remove issue entries whose EPUBs were deleted."
   (interactive)
   (let ((database (expand-file-name "metadata.db" nam/elfeed-calibre-library)))
-    (when (file-readable-p database)
+    (when (nam/elfeed-calibre-available-p)
+      (require 'elfeed-db)
       (condition-case err
           (let* ((connection (sqlite-open database t))
                  (rows (unwind-protect
@@ -123,13 +131,14 @@ Preserve read status, and remove issue entries whose EPUBs were deleted."
   ;; Retire the previous per-article browser fetcher in a running session.
   (remove-hook 'elfeed-show-update-hook #'nam/elfeed-calibre-show)
   (define-key elfeed-show-mode-map (kbd "f") #'elfeed-show-fetch-link)
-  (dolist (feed nam/elfeed-calibre-issue-feeds)
-    (setq elfeed-feeds (assoc-delete-all (car feed) elfeed-feeds))
-    (add-to-list 'elfeed-feeds feed t))
-  (clrhash elfeed-feed--meta-cache)
-  (add-hook 'elfeed-update-init-hook #'nam/elfeed-calibre-import-issues t)
-  (add-hook 'elfeed-fetch-functions #'nam/elfeed-calibre-fetch-issues)
-  (nam/elfeed-calibre-import-issues))
+  (when (nam/elfeed-calibre-available-p)
+    (dolist (feed nam/elfeed-calibre-issue-feeds)
+      (setq elfeed-feeds (assoc-delete-all (car feed) elfeed-feeds))
+      (add-to-list 'elfeed-feeds feed t))
+    (clrhash elfeed-feed--meta-cache)
+    (add-hook 'elfeed-update-init-hook #'nam/elfeed-calibre-import-issues t)
+    (add-hook 'elfeed-fetch-functions #'nam/elfeed-calibre-fetch-issues)
+    (nam/elfeed-calibre-import-issues)))
 
 (provide 'personal-elfeed-calibre-issues)
 ;;; elfeed-calibre-issues.el ends here

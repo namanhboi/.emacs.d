@@ -13,12 +13,19 @@
           '("inbox.org" "agenda.org" "projects.org"))
   "Potential agenda files, filtered to files present on the current host.")
 
-;; Org-roam requires its root to exist before database autosync starts.  This
-;; also creates the common Org parent directory on a fresh remote host.
-(make-directory my/org-roam-directory t)
+;; A machine without the notes checkout should still start normally.
+(defun my/org-roam-available-p ()
+  "Return non-nil when the notes directory and built-in SQLite are available."
+  (and (file-directory-p my/org-roam-directory)
+       (fboundp 'sqlite-available-p)
+       (sqlite-available-p)))
 
 (defvar my/bibliography-files '("~/org-files/ref/My Library.bib")
   "Bibliography files used by Org citation tools.")
+
+(setq my/bibliography-files
+      (cl-remove-if-not #'file-readable-p
+                        (mapcar #'expand-file-name my/bibliography-files)))
 
 (with-eval-after-load 'crux
   (define-key prelude-mode-map (kbd "C-c n") nil))
@@ -144,6 +151,7 @@
 ;;; 5. Org-Roam Integration
 (use-package org-roam
   :ensure t
+  :if (my/org-roam-available-p)
   :custom
   (org-roam-directory my/org-roam-directory)
   (org-roam-completion-everywhere t)
@@ -216,7 +224,8 @@
         bibtex-autokey-titlewords-stretch 1
         bibtex-autokey-titleword-length 5)
   ;; LaTeX export configuration
-  (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+  (when (executable-find "latexmk")
+    (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")))
   :config
   (require 'org-ref-ivy)
   (require 'org-ref-arxiv)
@@ -229,24 +238,10 @@
         org-ref-insert-ref-function 'org-ref-insert-ref-link
         org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))))
 
-;;; 6. Org-Roam Integration
-(use-package org-roam
-  :ensure t
-  :custom
-  (org-roam-directory my/org-roam-directory)
-  (org-roam-completion-everywhere t)
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert)
-         :map org-mode-map
-         ("C-M-i" . completion-at-point))
-  :config
-  (org-roam-db-autosync-mode 1))
-
-
 ;;; 7. Org-Roam Bibtex (ORB)
 (use-package org-roam-bibtex
   :ensure t
+  :if (my/org-roam-available-p)
   :after org-roam
   :hook (org-roam-mode . org-roam-bibtex-mode)
   :init
@@ -261,6 +256,7 @@
 ;;; 8. Citar (Modern Roam Linker)
 (use-package citar-org-roam
   :ensure t
+  :if (my/org-roam-available-p)
   :after (org-roam citar)
   :config
   (citar-register-notes-source 'orb-citar-source
@@ -283,8 +279,9 @@
 
 ;; 2. Ruthlessly overwrite Org-mode's default map
 (with-eval-after-load 'org
-  (define-key org-mode-map (kbd "C-c z") #'orb-insert-link)
-  (define-key org-mode-map (kbd "C-c b") #'orb-insert-link)
+  (when (my/org-roam-available-p)
+    (define-key org-mode-map (kbd "C-c z") #'orb-insert-link)
+    (define-key org-mode-map (kbd "C-c b") #'orb-insert-link))
   (define-key org-mode-map (kbd "C-c o") #'org-open-at-point)
   ;; Steal C-c ] back from org-agenda-file-to-front
   (define-key org-mode-map (kbd "C-c ]") #'org-ref-insert-link))
@@ -294,8 +291,9 @@
   (define-key prelude-mode-map (kbd "C-c o") nil))
 (with-eval-after-load 'ivy
   (define-key ivy-minibuffer-map (kbd "C-c o") #'ivy-dispatching-done))
-(global-set-key (kbd "C-c b") #'orb-insert-link)
-(global-set-key (kbd "C-c z") #'orb-insert-link)
+(when (my/org-roam-available-p)
+  (global-set-key (kbd "C-c b") #'orb-insert-link)
+  (global-set-key (kbd "C-c z") #'orb-insert-link))
 ;;; 7. Visual Styling (Org Modern & Fonts)
 (use-package org-modern
   :ensure t
@@ -347,7 +345,8 @@
 ;; Drag-and-drop to `dired`
 (add-hook 'dired-mode-hook 'org-download-enable)
 
-(setq org-preview-latex-default-process 'dvisvgm) ;No blur when scaling
+(when (and (executable-find "latex") (executable-find "dvisvgm"))
+  (setq org-preview-latex-default-process 'dvisvgm)) ;No blur when scaling
 
 (defun my/text-scale-adjust-latex-previews ()
   "Adjust the size of latex preview fragments when changing the
@@ -373,7 +372,8 @@ buffer's text scale."
           :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
 
 (add-hook 'text-scale-mode-hook #'my/text-scale-adjust-latex-previews)
-(setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+(when (executable-find "latexmk")
+  (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f")))
 
 ;; imenu
 (setq org-imenu-depth 7)

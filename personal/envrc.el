@@ -7,8 +7,9 @@
   (envrc-remote t)
   (envrc-async t)
   :config
-  ;; Enable envrc globally so it automatically looks for .envrc files
-  (envrc-global-mode 1)
+  ;; Keep editing functional on hosts without the external direnv program.
+  (when (executable-find "direnv")
+    (envrc-global-mode 1))
 
   ;; Optional: If you use the modeline indicator, you can customize the string
   ;; (setq envrc-debug nil)
@@ -21,8 +22,8 @@
 
 (defun my/envrc-before-prelude-lsp (original-function &rest arguments)
   "Run ORIGINAL-FUNCTION with ARGUMENTS once direnv has supplied its environment."
-  (when (and envrc-global-mode
-             (not envrc-mode))
+  (when (and (bound-and-true-p envrc-global-mode)
+             (not (bound-and-true-p envrc-mode)))
     (envrc-mode 1))
   (if (bound-and-true-p envrc--running)
       (setq nam/envrc-lsp-pending t)

@@ -32,3 +32,9 @@ systemctl --user disable --now calibre-news-daily.timer
 
 The unit files are installed in `~/.config/systemd/user/`. After changing a
 unit, copy the updated file there and run `systemctl --user daemon-reload`.
+
+The downloader also runs manually on macOS when Calibre is installed. It finds
+CLI tools on PATH or inside `calibre.app`, and asks Calibre for its recipe
+archive location. Set `EMACS_CALIBRE_LIBRARY` for a library outside
+`~/Calibre Library`. Without the library or required tools, it exits without
+downloading or creating state. The systemd timer remains Linux-only.

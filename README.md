@@ -342,6 +342,28 @@ Distributed under the GNU General Public License, version 3
 
 ## Local Emacs 31 installation
 
+The configuration installs its Emacs packages automatically through
+`use-package` and Prelude's package helpers. Built-in libraries are explicitly
+excluded from package installation. First startup needs network access; Ghostel
+also needs Git and an Emacs build with dynamic module support.
+
+On Linux or macOS, clone this repository into `~/.emacs.d` and install Emacs
+locally. Do not copy another machine's `elpa/`, `.elc`, `.eln`, native modules,
+or `personal/custom.el`. The configuration is tested with Emacs 31.1.
+
+External applications are optional and are not installed by Emacs. Calibre
+integration requires an existing `~/Calibre Library/metadata.db`; Org-roam
+autosync requires an existing notes directory and built-in SQLite. Missing
+notes, bibliographies, SQLite, direnv, spell checkers, and language servers do
+not prevent startup or ordinary editing. Clone the notes separately into
+`~/org-files` to enable the matching integrations on the next startup.
+
+PDF viewing prefers Zathura when installed, otherwise macOS `open` or Linux
+`xdg-open`. LaTeX uses latexmk and spell checking only when their programs are
+available. The optional news downloader discovers Calibre's CLI tools and
+recipe archive on each machine and skips downloads without its prerequisites.
+Its supplied systemd timer is Linux-specific and is never installed by startup.
+
 This workstation uses the signed GNU Emacs 31.1 release, built with GTK3,
 native compilation, Tree-sitter, SQLite, TLS, image support and dynamic modules.
 The active installation lives in `~/.local/opt/emacs-31.1-portable`; user
@@ -359,12 +381,12 @@ The fork intentionally retains its package refresh, configuration compilation,
 and C/CUDA and Rust compatibility fixes. A full upstream merge is separate
 from the Emacs upgrade.
 
-Corfu shows completion popups automatically outside LaTeX, with selection
+Corfu provides completion popups outside LaTeX, with selection
 history persisted by Savehist. Cape groups programming completion sources with
 buffer words, and prose sources with dictionary words, buffer words and emoji;
 filename completion stays separate. Eglot remains the Java language provider.
-LaTeX retains Company for citation and label completion. Completion Preview is
-not enabled by this configuration.
+LaTeX retains Company for citation and label completion. Completion Preview
+provides inline hints in supported buffers when available in the Emacs build.
 
 Before upgrading, preserve the entire configuration, including ignored files
 and untracked personal files. Native compilation caches are version-specific;

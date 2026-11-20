@@ -48,10 +48,22 @@
 (when prelude-override-package-user-dir
   (setq package-user-dir (expand-file-name "elpa" prelude-dir)))
 
+;; Theme dependencies can load theme definitions during package activation,
+;; before the package's own autoloads have registered its theme directory.
+(defun prelude-register-package-themes (package &rest _arguments)
+  "Register themes in PACKAGE before its activation code loads them."
+  (when-let* ((directory (package-desc-dir package)))
+    (when (file-expand-wildcards (expand-file-name "*-theme.el" directory))
+      (add-to-list 'custom-theme-load-path directory))))
+
+(advice-add 'package-activate-1 :before #'prelude-register-package-themes)
+
 (package-initialize)
 
 ;; use-package is built-in since Emacs 29
-(setq use-package-verbose t)
+(require 'use-package)
+(setq use-package-verbose t
+      use-package-always-ensure t)
 
 (defvar prelude-packages
   '(ace-window
@@ -143,8 +155,7 @@ removing unwanted packages."
 PACKAGE is installed only if not already present.  The file is opened in MODE."
   `(add-to-list 'auto-mode-alist
                 `(,extension . (lambda ()
-                                 (unless (package-installed-p ',package)
-                                   (package-install ',package))
+                                 (prelude-require-package ',package)
                                  (,mode)))))
 
 (defvar prelude-auto-install-alist
