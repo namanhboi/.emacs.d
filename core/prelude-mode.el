@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; prelude-mode.el --- Emacs Prelude: minor mode
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
@@ -46,8 +47,8 @@
     (define-key map [(control shift down)]  'move-text-down)
     (define-key map [(meta shift up)]  'move-text-up)
     (define-key map [(meta shift down)]  'move-text-down)
-    ;; (define-key map (kbd "C-c n") 'crux-cleanup-buffer-or-region)
-    ;; (define-key map (kbd "C-c f")  'crux-recentf-find-file)
+    (define-key map (kbd "C-c n") 'crux-cleanup-buffer-or-region)
+    (define-key map (kbd "C-c f")  'crux-recentf-find-file)
     (define-key map (kbd "C-M-z") 'crux-indent-defun)
     (define-key map (kbd "C-c u") 'crux-view-url)
     (define-key map (kbd "C-c e") 'crux-eval-and-replace)
@@ -61,7 +62,7 @@
     (define-key map (kbd "C-c TAB") 'crux-indent-rigidly-and-copy-to-clipboard)
     (define-key map (kbd "C-c I") 'crux-find-user-init-file)
     (define-key map (kbd "C-c S") 'crux-find-shell-init-file)
-    ;; (define-key map (kbd "C-c i") 'imenu-anywhere)
+    (define-key map (kbd "C-c i") 'imenu-anywhere)
     (when prelude-projectile
       ;; extra prefix for projectile
       (when prelude-super-keybindings

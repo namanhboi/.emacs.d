@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;; 1. Configure nov.el for EPUBs
 (use-package nov
   :ensure t

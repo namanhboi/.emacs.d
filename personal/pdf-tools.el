@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; PDF handling
 
 (defcustom my/pdf-viewer-program "zathura"
@@ -37,7 +38,7 @@
 
 (defun my/open-url-externally (url)
   "Open URL with the desktop URL handler."
-  (if-let ((xdg-open (executable-find "xdg-open")))
+  (if-let* ((xdg-open (executable-find "xdg-open")))
       (start-process "open-url" nil xdg-open url)
     (browse-url url)))
 
@@ -48,7 +49,7 @@ Fall back to `my/open-pdf-with-zathura' for PDFs outside Zotero storage."
   (let ((pdf-file (or file buffer-file-name)))
     (unless pdf-file
       (error "No PDF file given"))
-    (if-let ((key (my/zotero-storage-key-from-file pdf-file)))
+    (if-let* ((key (my/zotero-storage-key-from-file pdf-file)))
         (let ((url (format "zotero://open-pdf/library/items/%s" key)))
           (my/open-url-externally url)
           (message "Opened %s in Zotero" (abbreviate-file-name pdf-file)))

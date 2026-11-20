@@ -106,6 +106,42 @@ to see the event Emacs received.
 once the installation is done. By default most of the modules
 that ship with Prelude are **not** loaded.
 
+## Java formatting
+
+All Java source and test buffers follow the unmodified DSLabs Google Java
+Format style: spaces, 2-space block indentation, 4-space continuation
+indentation, and a 100-column target.  JavaDoc and imports are formatted by
+the same formatter.  These defaults apply globally, including outside DSLabs.
+
+`personal/java.el` leaves Google Java Format off the save hooks.  Use
+`C-c C-l f` or `M-x nam/java-format-buffer` to format manually, then review
+and stage those changes before committing.  It uses
+`~/dslabs/jars/google-java-format.jar` with local `java`, including for TRAMP
+buffers.  On another host, set `nam/java-format-jar` to a standalone formatter
+jar or install a `google-java-format` executable on PATH.  Formatter errors
+leave the buffer intact and report the problem.
+
+`personal/java-eglot.el` starts `jdtls` for Java independently of C/C++ tools.
+Run `bash utils/install-jdtls.sh` to install the checksum-verified JDT LS 1.55.0
+runtime used by this configuration.  This avoids the newer Equinox/Lombok
+[configuration-loading regression](https://github.com/projectlombok/lombok/issues/4058),
+which generates `getResult()` instead of DSLabs' required `result()` and causes
+false missing-method errors.  Set `nam/java-jdtls-program` to select a different
+launcher; without the local runtime, it falls back to `jdtls` on PATH.
+It loads the newest Lombok agent jar found in the local Gradle or Maven cache;
+set `nam/java-lombok-jar` for another location.  JDT workspaces live under
+`savefile/jdtls/`, keyed by the full project path.  For DSLabs handouts, the
+Eclipse classpath must include `labs/*/src`, `labs/*/tst`, and the four framework
+and grader jars used by the handout Makefile.  Metadata from the full upstream
+Gradle checkout does not describe a handout correctly.
+
+## Result navigation
+
+Definition jumps and returns, Consult previews, and Occur/grep/compilation
+results center the target source line and highlight its full width.  This also
+applies to `n`/`p` in Embark exports while keeping focus in the results buffer.
+The highlight fades over about 0.8 seconds on displays that support pulsing.
+
 ## Try Before You "Buy"
 
 If you're using Emacs 29+ there's a simple way to try Prelude
@@ -303,3 +339,34 @@ Copyright © 2011-2026 Bozhidar Batsov and
 Distributed under the GNU General Public License, version 3
 
 [badge-license]: https://img.shields.io/badge/license-GPL_3-green.svg
+
+## Local Emacs 31 installation
+
+This workstation uses the signed GNU Emacs 31.1 release, built with GTK3,
+native compilation, Tree-sitter, SQLite, TLS, image support and dynamic modules.
+The active installation lives in `~/.local/opt/emacs-31.1-portable`; user
+launchers select its `emacs` and `emacsclient`. The original
+`~/.local/opt/emacs-31.1` installation is preserved for reference.
+
+Build with portable CPU flags such as `-O2 -pipe -march=x86-64 -mtune=generic`,
+without `-march=native`. A build targeting a different CPU can crash with an
+illegal instruction before loading this configuration. After changing CPUs,
+also move old native compilation caches aside so Emacs can regenerate them.
+
+Keep personal options that must precede Prelude in `personal/preload/`.
+Personal completion, navigation and keymap overrides live in `personal/`.
+The fork intentionally retains its package refresh, configuration compilation,
+and C/CUDA and Rust compatibility fixes. A full upstream merge is separate
+from the Emacs upgrade.
+
+Corfu shows completion popups automatically outside LaTeX, with selection
+history persisted by Savehist. Cape groups programming completion sources with
+buffer words, and prose sources with dictionary words, buffer words and emoji;
+filename completion stays separate. Eglot remains the Java language provider.
+LaTeX retains Company for citation and label completion. Completion Preview is
+not enabled by this configuration.
+
+Before upgrading, preserve the entire configuration, including ignored files
+and untracked personal files. Native compilation caches are version-specific;
+do not copy `.eln` files between Emacs versions. Session snapshots and the
+pre-upgrade backup are kept under `~/.cache/emacs-upgrade/` on this workstation.

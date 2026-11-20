@@ -1,4 +1,4 @@
-(setq prelude-theme
-      (if (display-graphic-p)
-          'ef-dream
-        'ef-dream))
+;;; appearance.el --- Personal theme selection -*- lexical-binding: t; -*-
+(setq prelude-theme 'ef-dream)
+(with-eval-after-load 'prelude-packages
+  (prelude-require-package 'ef-themes))

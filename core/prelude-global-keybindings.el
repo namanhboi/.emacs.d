@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; prelude-global-keybindings.el --- Emacs Prelude: some useful keybindings.
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
@@ -66,6 +67,10 @@
 
 (define-key 'help-command (kbd "C-i") 'info-display-manual)
 
+;; replace zap-to-char functionality with the more powerful zop-to-char
+(global-set-key (kbd "M-z") 'zop-up-to-char)
+(global-set-key (kbd "M-Z") 'zop-to-char)
+
 ;; kill lines backward
 (global-set-key (kbd "C-<backspace>") 'crux-kill-line-backwards)
 
@@ -90,17 +95,21 @@
 
 (global-set-key (kbd "C-=") 'er/expand-region)
 
+;; recommended avy keybindings
+(global-set-key (kbd "C-:") 'avy-goto-char)
+(global-set-key (kbd "C-'") 'avy-goto-char-2)
+(global-set-key (kbd "M-g f") 'avy-goto-line)
+(global-set-key (kbd "M-g w") 'avy-goto-word-1)
+(global-set-key (kbd "M-g e") 'avy-goto-word-0)
 
-(global-set-key (kbd "C-x o") 'ace-window)
-(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+;; additional avy keybindings
+(global-set-key (kbd "s-,") 'avy-goto-char)
+(global-set-key (kbd "s-.") 'avy-goto-word-or-subword-1)
+(global-set-key (kbd "C-c v") 'avy-goto-word-or-subword-1)
+
+;; improved window navigation with ace-window
+(global-set-key (kbd "s-w") 'ace-window)
 (global-set-key [remap other-window] 'ace-window)
-
-;; smartparens conflict with this
-(global-set-key (kbd "M-<backspace>") 'backward-kill-word)
-(global-set-key (kbd "M-DEL") 'backward-kill-word)
-(with-eval-after-load 'smartparens
-  (define-key sp-keymap (kbd "M-<backspace>") nil)
-  (define-key sp-keymap (kbd "M-DEL") nil))
 
 (provide 'prelude-global-keybindings)
 

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; 1. Portable paths and Prelude conflict resolution
 
 (defvar my/org-directory (expand-file-name "org-files" "~")
@@ -381,3 +382,22 @@ buffer's text scale."
 
 
 (require 'org-habit)
+
+(use-package org-timegrid
+  :ensure t
+  :bind ("C-c G" . org-timegrid-week)
+  ;; The SVG header has no line-number gutter; keep its columns aligned.
+  :hook (org-timegrid-mode . (lambda () (display-line-numbers-mode -1)))
+  :init
+  (setq org-timegrid-org-capture-file
+        (expand-file-name "agenda.org" my/org-directory)
+        org-timegrid-org-tag-color-alist
+        '(("work" . indigo) ("personal" . green)))
+  :config
+  (require 'org-timegrid-org))
+
+(use-package org-timegrid-agenda
+  :ensure nil
+  :after org-agenda
+  :config
+  (org-timegrid-agenda-mode 1))

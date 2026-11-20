@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; prelude-modules.el --- Personal Prelude modules
 
 ;;; Commentary:

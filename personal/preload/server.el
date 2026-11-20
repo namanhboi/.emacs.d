@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; server.el --- Emacs server + Zathura inverse search
 
 (require 'server)

@@ -1,4 +1,4 @@
-;;; prelude-packages.el --- Emacs Prelude: default package selection.
+;;; prelude-packages.el --- Emacs Prelude: default package selection. -*- lexical-binding: nil; -*-
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
 ;;
@@ -72,7 +72,6 @@
     guru-mode
     hl-todo
     imenu-anywhere
-    projectile
     magit
     move-text
     operate-on-number

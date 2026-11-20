@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; auctex.el --- Personal AUCTeX config for Prelude
 
 ;; Packages
@@ -95,7 +96,7 @@
   ;; LaTeX -> BibTeX/Biber if needed -> LaTeX -> LaTeX
   (add-to-list 'TeX-command-list
                '("LatexMk"
-                 "latexmk -pdf -interaction=nonstopmode -file-line-error -synctex=1 %s"
+                 "latexmk -pdf -interaction=nonstopmode -file-line-error -synctex=1 %(output-dir) %s"
                  TeX-run-TeX nil t
                  :help "Run latexmk on file"))
 

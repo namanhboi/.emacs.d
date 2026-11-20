@@ -16,6 +16,9 @@
       remote-file-name-inhibit-auto-save-visited t)
 
 (with-eval-after-load 'tramp
+  ;; Preserve each host's login PATH, including virtualenvs and course tools.
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
   ;; Inline transfer is faster for small and medium files.  Above 1 MiB,
   ;; permit TRAMP to use its out-of-band copy method.
   (setq tramp-copy-size-limit (* 1024 1024)

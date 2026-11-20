@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (use-package ghostel
   :vc (:url "https://github.com/dakra/ghostel"
             :lisp-dir "lisp"
@@ -22,21 +23,27 @@
              ghostel-project-previous
              ghostel-project-list-buffers))
 
-(defun projectile-run-ghostel (&optional arg)
-  "Invoke `ghostel' from the current Projectile project root.
+(require 'project)
+
+(defun nam/project-ghostel (&optional arg)
+  "Invoke `ghostel' from the current project root.
 
 Switch to the project-specific Ghostel buffer if it already exists.
 With prefix ARG, pass ARG through to `ghostel'."
   (interactive "P")
-  (let* ((project (file-name-as-directory (projectile-acquire-root)))
-         (default-directory project)
-         (ghostel-buffer-name (projectile-generate-process-name
-                               "ghostel" nil project)))
+  (let* ((project (project-current t))
+         (root (file-name-as-directory (expand-file-name (project-root project))))
+         (default-directory root)
+         (name (format "*ghostel %s*" (project-name project)))
+         (existing (get-buffer name))
+         ;; Preserve existing terminal names and distinguish equal project names.
+         (ghostel-buffer-name
+          (if (and existing
+                   (not (equal (buffer-local-value 'default-directory existing)
+                               root)))
+              (format "*ghostel %s*" (abbreviate-file-name root))
+            name)))
     (ghostel arg)))
 
-(with-eval-after-load 'projectile
-  (define-key projectile-command-map (kbd "x G") #'projectile-run-ghostel)
-  (define-key projectile-command-map (kbd "x h") #'projectile-run-ghostel))
-
-(global-set-key (kbd "C-x p h") #'projectile-run-ghostel)
+(define-key project-prefix-map (kbd "h") #'nam/project-ghostel)
 ;; Default configuration

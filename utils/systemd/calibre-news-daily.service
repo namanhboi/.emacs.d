@@ -1,0 +1,14 @@
+[Unit]
+Description=Download daily Atlantic and Financial Times issues for Elfeed
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/.emacs.d/utils/fetch-calibre-news.py
+Environment=LC_ALL=C.UTF-8
+Nice=10
+CPUQuota=200%
+IOSchedulingClass=idle
+TimeoutStartSec=3h
+Restart=on-failure
+RestartSec=30min

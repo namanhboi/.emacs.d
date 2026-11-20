@@ -42,3 +42,10 @@ org-roam.db
 projectile-frecency.eld
 projects
 tree-sitter/
+
+# Local browsing data, thumbnails, game scores, and Python bytecode.
+/dirvish/
+/elfeed/
+/games/
+__pycache__/
+*.pyc

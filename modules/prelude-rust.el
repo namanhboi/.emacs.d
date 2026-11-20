@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; prelude-rust.el --- Emacs Prelude: Rust programming support.
 
 ;;; Commentary:

@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; prelude-company.el --- company-mode setup
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
@@ -44,9 +45,6 @@
 
 (global-company-mode 1)
 (diminish 'company-mode)
-
-;; Use TAB to indent or complete
-(define-key company-mode-map [remap indent-for-tab-command] 'company-indent-or-complete-common)
 
 (provide 'prelude-company)
 ;;; prelude-company.el ends here

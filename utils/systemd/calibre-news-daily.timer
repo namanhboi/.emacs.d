@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch Atlantic and Financial Times at 7am daily
+
+[Timer]
+OnCalendar=*-*-* 07:00:00
+Persistent=true
+Unit=calibre-news-daily.service
+
+[Install]
+WantedBy=timers.target

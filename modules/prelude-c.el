@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 ;;; prelude-c.el --- Emacs Prelude: cc-mode configuration.
 ;;
 ;; Copyright © 2011-2026 Bozhidar Batsov
@@ -70,10 +71,10 @@
   (subword-mode +1)
   ;; Eglot's C/C++ defaults require one of these language servers.  On a
   ;; minimal remote host, keep editing functional without repeatedly warning.
-  (when (or (executable-find "clangd")
-            (executable-find "ccls"))
-    (prelude-lsp-enable))
   (when (nam/c-c++-buffer-p)
+    (when (or (executable-find "clangd")
+              (executable-find "ccls"))
+      (prelude-lsp-enable))
     (add-hook 'before-save-hook #'nam/c-c++-format-buffer-on-save nil t)))
 
 (setq prelude-c-mode-common-hook 'prelude-c-mode-common-defaults)
